@@ -507,7 +507,6 @@
       });
     })();
   </script>
-
   <!-- ===== 动态引入每天爬虫更新的 JS 数据包 ====== -->
   <script src="latest-radar.js" onerror="console.info('今日雷达尚在构建中。')"></script>
   <script>
@@ -524,10 +523,26 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
+      function buildSignalBadges(signals) {
+        if (!Array.isArray(signals) || !signals.length) return '';
+        return signals.map(sig => {
+          let cls = 'signal-badge-default';
+          if (sig.startsWith('HF')) cls = 'signal-badge-hf';
+          else if (sig === '有源码') cls = 'signal-badge-code';
+          else if (sig.startsWith('顶会')) cls = 'signal-badge-conf';
+          return `<span class="signal-badge ${cls}">${escapeHtml(sig)}</span>`;
+        }).join('');
+      }
+
       const cards = radarData.map((item) => {
         const safeUrl = String(item.url || '#');
+        const tier = item.tier === 'featured' ? 'featured' : 'notable';
+        const tierLabel = tier === 'featured' ? '⭐ 精选' : '· 值得关注';
+        const signalsHtml = buildSignalBadges(item.signals || []);
         return `
-          <article class="radar-card">
+          <article class="radar-card ${tier}">
+            <div class="radar-tier-badge ${tier}">${tierLabel}</div>
+            ${signalsHtml ? `<div class="radar-signals">${signalsHtml}</div>` : ''}
             <header class="radar-head">
               <span class="radar-vendor">${escapeHtml(item.vendor)}</span>
               <time class="radar-date">${escapeHtml(item.date)}</time>
@@ -538,6 +553,7 @@
             <div class="radar-tag">🏷️ ${escapeHtml(item.tag)}</div>
             <p class="radar-summary">${escapeHtml(item.one_sentence_desc)}</p>
             <p class="radar-analysis"><strong>深度解析：</strong>${escapeHtml(item.deep_analysis)}</p>
+            <span class="radar-disclaimer">解读基于论文摘要，以原论文为准</span>
           </article>
         `;
       }).join('');
@@ -563,12 +579,26 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
+      function buildSignalBadges(signals) {
+        if (!Array.isArray(signals) || !signals.length) return '';
+        return signals.map(sig => {
+          let cls = 'signal-badge-default';
+          if (sig.startsWith('HF')) cls = 'signal-badge-hf';
+          else if (sig === '有源码') cls = 'signal-badge-code';
+          else if (sig.startsWith('顶会')) cls = 'signal-badge-conf';
+          return `<span class="signal-badge ${cls}">${escapeHtml(sig)}</span>`;
+        }).join('');
+      }
+
       const renderDayCards = (items) => {
         if (!Array.isArray(items) || !items.length) return '';
         return items.map((item) => {
           const safeUrl = String(item.url || '#');
+          const tier = item.tier === 'featured' ? 'featured' : 'notable';
+          const signalsHtml = buildSignalBadges(item.signals || []);
           return `
-            <article class="radar-card">
+            <article class="radar-card ${tier}">
+              ${signalsHtml ? `<div class="radar-signals">${signalsHtml}</div>` : ''}
               <header class="radar-head">
                 <span class="radar-vendor">${escapeHtml(item.vendor)}</span>
                 <time class="radar-date">${escapeHtml(item.date)}</time>
@@ -579,6 +609,7 @@
               <div class="radar-tag">🏷️ ${escapeHtml(item.tag)}</div>
               <p class="radar-summary">${escapeHtml(item.one_sentence_desc)}</p>
               <p class="radar-analysis"><strong>深度解析：</strong>${escapeHtml(item.deep_analysis)}</p>
+              <span class="radar-disclaimer">解读基于论文摘要，以原论文为准</span>
             </article>
           `;
         }).join('');
@@ -590,82 +621,100 @@
         return payload;
       };
 
-      fetch('./data/radar-history.json', { cache: 'no-store' })
-        .then((res) => {
-          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          return res.json();
-        })
-        .then((data) => {
-          const daily = toDailyMap(data);
-          const dates = Object.keys(daily).sort().reverse();
-          const INITIAL_DAYS = 3;
-          const BATCH_DAYS = 2;
-          let loadedDays = 0;
-          let isLoading = false;
+      function setupHistoryFromDailyMap(daily) {
+        const dates = Object.keys(daily).sort().reverse();
+        const INITIAL_DAYS = 3;
+        const BATCH_DAYS = 2;
+        let loadedDays = 0;
+        let isLoading = false;
 
-          if (!dates.length) {
-            historyWrap.classList.remove('hidden');
-            historyEmpty.classList.remove('hidden');
-            return;
-          }
-
-          historyEmpty.classList.add('hidden');
-
-          const updateProgress = () => {
-            historyProgress.textContent = `已显示 ${loadedDays} / ${dates.length} 天`;
-          };
-
-          const appendDays = (count) => {
-            if (loadedDays >= dates.length) {
-              historyLoading.classList.add('hidden');
-              return;
-            }
-
-            const end = Math.min(loadedDays + count, dates.length);
-            const batchDates = dates.slice(loadedDays, end);
-            const html = batchDates.map((date) => {
-              const cardsHtml = renderDayCards(daily[date] || []);
-              return `
-                <section class="history-day">
-                  <h3 class="history-day-title">${escapeHtml(date)} · 6条知识点</h3>
-                  <div class="radar-grid">${cardsHtml}</div>
-                </section>
-              `;
-            }).join('');
-
-            historyCards.insertAdjacentHTML('beforeend', html);
-            loadedDays = end;
-            updateProgress();
-            historyLoading.classList.toggle('hidden', loadedDays >= dates.length);
-          };
-
-          const onScrollLoad = () => {
-            if (isLoading || loadedDays >= dates.length) return;
-            const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 180;
-            if (!nearBottom) return;
-
-            isLoading = true;
-            historyLoading.classList.remove('hidden');
-            requestAnimationFrame(() => {
-              appendDays(BATCH_DAYS);
-              isLoading = false;
-            });
-          };
-
-          const fillViewportIfNeeded = () => {
-            while (loadedDays < dates.length && document.documentElement.scrollHeight <= window.innerHeight + 40) {
-              appendDays(BATCH_DAYS);
-            }
-          };
-
-          appendDays(INITIAL_DAYS);
-          fillViewportIfNeeded();
-          window.addEventListener('scroll', onScrollLoad, { passive: true });
-          historyWrap.classList.remove('hidden');
-        })
-        .catch(() => {
+        if (!dates.length) {
           historyWrap.classList.remove('hidden');
           historyEmpty.classList.remove('hidden');
+          return;
+        }
+        historyEmpty.classList.add('hidden');
+
+        const updateProgress = () => {
+          historyProgress.textContent = `已显示 ${loadedDays} / ${dates.length} 天`;
+        };
+
+        const appendDays = (count) => {
+          if (loadedDays >= dates.length) {
+            historyLoading.classList.add('hidden');
+            return;
+          }
+          const end = Math.min(loadedDays + count, dates.length);
+          const batchDates = dates.slice(loadedDays, end);
+          const html = batchDates.map((date) => {
+            const cardsHtml = renderDayCards(daily[date] || []);
+            const cnt = (daily[date] || []).length;
+            return `
+              <section class="history-day">
+                <h3 class="history-day-title">${escapeHtml(date)} · ${cnt}条知识点</h3>
+                <div class="radar-grid">${cardsHtml}</div>
+              </section>
+            `;
+          }).join('');
+          historyCards.insertAdjacentHTML('beforeend', html);
+          loadedDays = end;
+          updateProgress();
+          historyLoading.classList.toggle('hidden', loadedDays >= dates.length);
+        };
+
+        const fillViewportIfNeeded = () => {
+          while (loadedDays < dates.length && document.documentElement.scrollHeight <= window.innerHeight + 40) {
+            appendDays(BATCH_DAYS);
+          }
+        };
+
+        appendDays(INITIAL_DAYS);
+        fillViewportIfNeeded();
+        window.addEventListener('scroll', () => {
+          if (isLoading || loadedDays >= dates.length) return;
+          if (window.innerHeight + window.scrollY < document.documentElement.scrollHeight - 180) return;
+          isLoading = true;
+          historyLoading.classList.remove('hidden');
+          requestAnimationFrame(() => { appendDays(BATCH_DAYS); isLoading = false; });
+        }, { passive: true });
+        historyWrap.classList.remove('hidden');
+      }
+
+      // 优先尝试月度索引（history-index.json → 月度文件），回退到整合历史文件
+      fetch('./data/history-index.json', { cache: 'no-store' })
+        .then(res => {
+          if (!res.ok) throw new Error('no index');
+          return res.json();
+        })
+        .then(index => {
+          const months = Array.isArray(index.months) ? index.months : [];
+          if (!months.length) throw new Error('empty index');
+          const allDailyMap = {};
+          let loadedMonths = 0;
+          function loadNextMonth() {
+            if (loadedMonths >= months.length) {
+              setupHistoryFromDailyMap(allDailyMap);
+              return;
+            }
+            const month = months[loadedMonths++];
+            fetch(`./data/${month}.json`, { cache: 'no-store' })
+              .then(r => r.ok ? r.json() : {})
+              .then(monthData => { Object.assign(allDailyMap, monthData); loadNextMonth(); })
+              .catch(() => loadNextMonth());
+          }
+          loadNextMonth();
+        })
+        .catch(() => {
+          fetch('./data/radar-history.json', { cache: 'no-store' })
+            .then(res => {
+              if (!res.ok) throw new Error(`HTTP ${res.status}`);
+              return res.json();
+            })
+            .then(data => setupHistoryFromDailyMap(toDailyMap(data)))
+            .catch(() => {
+              historyWrap.classList.remove('hidden');
+              historyEmpty.classList.remove('hidden');
+            });
         });
     })();
   </script>

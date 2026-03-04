@@ -371,7 +371,7 @@ h1 {
 }
 
 .card::after {
-  content: "点入详情 \2192";
+  content: "鐐瑰叆璇︽儏 \2192";
   position: absolute;
   right: 12px;
   bottom: 10px;
@@ -647,4 +647,88 @@ footer {
   .radar { padding: 14px; }
   .radar-title { font-size: 18px; }
   .history-title { font-size: 18px; }
+}
+
+
+/* ===== Radar: tiered card styles (featured / notable) ===== */
+.radar-card.featured {
+  border-color: rgba(0, 82, 255, 0.4);
+  background: linear-gradient(135deg, rgba(0, 82, 255, 0.04), rgba(255,255,255,1));
+  box-shadow: 0 4px 20px rgba(0, 82, 255, 0.10);
+}
+
+.radar-card.featured .radar-concept {
+  font-size: 20px;
+}
+
+.radar-tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 6px;
+}
+
+.radar-tier-badge.featured {
+  background: rgba(0, 82, 255, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(0, 82, 255, 0.3);
+}
+
+.radar-tier-badge.notable {
+  background: rgba(113, 128, 150, 0.1);
+  color: var(--muted);
+  border: 1px solid rgba(113, 128, 150, 0.3);
+}
+
+/* ===== Radar: signal badges ===== */
+.radar-signals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.signal-badge {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.signal-badge-hf {
+  background: rgba(255, 162, 0, 0.12);
+  color: #b87400;
+  border-color: rgba(255, 162, 0, 0.35);
+}
+
+.signal-badge-code {
+  background: rgba(34, 160, 90, 0.12);
+  color: #1a7a45;
+  border-color: rgba(34, 160, 90, 0.35);
+}
+
+.signal-badge-conf {
+  background: rgba(138, 43, 226, 0.10);
+  color: #6b1fa0;
+  border-color: rgba(138, 43, 226, 0.30);
+}
+
+.signal-badge-default {
+  background: rgba(113, 128, 150, 0.10);
+  color: var(--muted);
+  border-color: rgba(113, 128, 150, 0.28);
+}
+
+/* ===== Radar: source disclaimer ===== */
+.radar-disclaimer {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0.7;
 }
