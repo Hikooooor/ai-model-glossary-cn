@@ -1,0 +1,56 @@
+name: Daily DeepSeek AI Radar
+
+# 设置触发条件
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/daily_spider.py' # 当你修改这个脚本时，立刻帮你测试一次
+  schedule:
+    # 每天 UTC 时间 0点（北京时间早上 8点）执行自动化任务
+    # 这个定时抓取是你实现 "每日 AI 技术扫描" 的核心触发点
+    - cron: '0 0 * * *'
+
+  # 使其可以手动触发，这对你开发和修改很有用
+  workflow_dispatch:
+
+# 给 Action 推送代码的回写权限（重点：它每天会把爬到的新数据存成JS文件并自己提交进仓库！）
+permissions:
+  contents: write
+
+jobs:
+  run-daily-radar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码库
+        uses: actions/checkout@v4
+
+      - name: 配置 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11' # 用稳定的版本执行
+
+      - name: 安装必备请求库
+        run: |
+          python -m pip install --upgrade pip
+          # 目前我们只用了内置的 urllib, 没有额外的三方依赖，非常轻量
+          # pip install requests beautifulsoup4  # 未来如果写真爬虫这里就可以解除了
+
+      - name: 调用 DeepSeek API 分析最新学术前沿
+        env:
+          # 神奇的地方：这一行会自动调取你在 GitHub 网页上配置的安全密文，你的 Key 不会泄露在你的代码里
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          python scripts/daily_spider.py
+          
+      - name: 让机器人将生成的雷达分析页推送至网页端
+        run: |
+          git config --global user.name "AI Radar Bot 🤖"
+          git config --global user.email "bot@github-actions.local"
+          # 如果雷达更新出了新文件或改动了数据
+          git add latest-radar.js
+          git add data/radar-history.json
+          # 仅在有变动时提交
+          git diff-index --quiet HEAD || git commit -m "🚀 每日 AI 前沿播报: $(date +'%Y-%m-%d') 已由 DeepSeek 解析完毕并部署到前端版图"
+          git push
