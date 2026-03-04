@@ -371,7 +371,7 @@ h1 {
 }
 
 .card::after {
-  content: "鐐瑰叆璇︽儏 \2192";
+  content: "点入详情 \2192";
   position: absolute;
   right: 12px;
   bottom: 10px;
