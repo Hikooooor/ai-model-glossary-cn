@@ -11,6 +11,8 @@ on:
     # 每天 UTC 时间 0点（北京时间早上 8点）执行自动化任务
     # 这个定时抓取是你实现 "每日 AI 技术扫描" 的核心触发点
     - cron: '0 0 * * *'
+    # 兜底补偿触发：GitHub schedule 可能存在分钟级延迟，15 分钟后再触发一次
+    - cron: '15 0 * * *'
 
   # 使其可以手动触发，这对你开发和修改很有用
   workflow_dispatch:
@@ -19,12 +21,19 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: daily-radar
+  cancel-in-progress: false
+
 jobs:
   run-daily-radar:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: 检出代码库
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: 配置 Python 环境
         uses: actions/setup-python@v5
@@ -43,6 +52,27 @@ jobs:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
           python scripts/daily_spider.py
+
+      - name: 记录本次运行时间（用于排查定时触发）
+        run: |
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone, timedelta
+
+          now_utc = datetime.now(timezone.utc)
+          beijing = now_utc.astimezone(timezone(timedelta(hours=8)))
+
+          payload = {
+            "last_run_utc": now_utc.strftime("%Y-%m-%d %H:%M:%S"),
+            "last_run_beijing": beijing.strftime("%Y-%m-%d %H:%M:%S"),
+            "workflow": "daily-update",
+            "run_id": "${{ github.run_id }}",
+            "run_number": "${{ github.run_number }}"
+          }
+
+          with open("data/last-run.json", "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
+          PY
           
       - name: 让机器人将生成的雷达分析页推送至网页端
         run: |
@@ -51,6 +81,12 @@ jobs:
           # 如果雷达更新出了新文件或改动了数据
           git add latest-radar.js
           git add data/radar-history.json
+          git add data/history-index.json
+          git add data/*.json
           # 仅在有变动时提交
-          git diff-index --quiet HEAD || git commit -m "🚀 每日 AI 前沿播报: $(date +'%Y-%m-%d') 已由 DeepSeek 解析完毕并部署到前端版图"
-          git push
+          if git diff --cached --quiet; then
+            echo "无文件变更，跳过提交。"
+          else
+            git commit -m "🚀 每日 AI 前沿播报: $(date +'%Y-%m-%d')"
+            git push
+          fi

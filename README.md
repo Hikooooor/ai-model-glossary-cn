@@ -38,6 +38,20 @@
 4. 输出到 `latest-radar.js`（当天展示）并写入 `data/radar-history.json`（历史归档）。
 5. 工作流自动提交这两个文件到仓库。
 
+## 定时任务排查（Schedule 不触发）
+
+若发现没有按预期时间更新，优先检查：
+
+- 仓库默认分支是否为 `main`（`schedule` 仅在默认分支生效）。
+- 仓库是否长期无活动（GitHub 可能暂停定时任务，重新启用 Actions 后恢复）。
+- Actions 页面是否存在失败记录（网络波动/外部 API 超时会导致当次失败）。
+
+当前工作流已加入以下保障：
+
+- 每天 UTC `00:00` + `00:15` 双触发（第二次作为兜底补偿）。
+- 自动写入 `data/last-run.json`，可直接查看最近一次实际运行时间。
+- 自动提交 `latest-radar.js` 与 `data/*.json`，避免新增历史分片未提交。
+
 ## 历史归档结构
 
 `data/radar-history.json` 结构如下：
