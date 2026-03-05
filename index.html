@@ -58,6 +58,8 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
+      const formatRichText = (text) => escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
       function buildSignalBadges(signals) {
         if (!Array.isArray(signals) || !signals.length) return '';
         return signals.map(sig => {
@@ -86,8 +88,8 @@
               <a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.concept_name)}</a>
             </h3>
             <div class="radar-tag">🏷️ ${escapeHtml(item.tag)}</div>
-            <p class="radar-summary">${escapeHtml(item.one_sentence_desc)}</p>
-            <p class="radar-analysis"><strong>深度解析：</strong>${escapeHtml(item.deep_analysis)}</p>
+            <p class="radar-summary">${formatRichText(item.one_sentence_desc)}</p>
+            <p class="radar-analysis"><strong>深度解析：</strong>${formatRichText(item.deep_analysis)}</p>
             <span class="radar-disclaimer">解读基于论文摘要，以原论文为准</span>
           </article>
         `;
@@ -113,6 +115,8 @@
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+
+      const formatRichText = (text) => escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
       function buildSignalBadges(signals) {
         if (!Array.isArray(signals) || !signals.length) return '';
@@ -142,8 +146,8 @@
                 <a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.concept_name)}</a>
               </h3>
               <div class="radar-tag">🏷️ ${escapeHtml(item.tag)}</div>
-              <p class="radar-summary">${escapeHtml(item.one_sentence_desc)}</p>
-              <p class="radar-analysis"><strong>深度解析：</strong>${escapeHtml(item.deep_analysis)}</p>
+              <p class="radar-summary">${formatRichText(item.one_sentence_desc)}</p>
+              <p class="radar-analysis"><strong>深度解析：</strong>${formatRichText(item.deep_analysis)}</p>
               <span class="radar-disclaimer">解读基于论文摘要，以原论文为准</span>
             </article>
           `;
