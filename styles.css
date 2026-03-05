@@ -233,9 +233,17 @@ h1 {
 }
 
 .radar-analysis {
-  margin: 0;
+  margin: 2px 0 0;
   color: var(--muted);
   font-size: 14px;
+  line-height: 1.75;
+  white-space: pre-line;
+}
+
+.radar-analysis strong {
+  display: inline-block;
+  margin-bottom: 4px;
+  color: var(--text);
 }
 
 .history-head {
