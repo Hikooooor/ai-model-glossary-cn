@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import time
 import argparse
+import re
 
 # ==========================================
 # 多源采集 + 多信号评分 + 分层输出
@@ -425,12 +426,80 @@ def _ensure_rich_output(parsed, article):
     }
 
 
+def _extract_key_facts(article, max_items=3):
+    """从标题/摘要中提取可验证线索（数字、倍数、基准关键词）。"""
+    text = f"{article.get('title', '')} {article.get('raw_text', '')}"
+    number_hits = re.findall(r"\b\d+(?:\.\d+)?(?:%|x|倍|ms|FPS|B|M|K)?\b", text, flags=re.IGNORECASE)
+
+    benchmark_keywords = [
+        "MMLU", "GSM8K", "HumanEval", "MATH", "MMMU", "AIME", "GPQA",
+        "ImageNet", "COCO", "WebArena", "tau", "FID", "mAP", "BLEU"
+    ]
+    benchmark_hits = [kw for kw in benchmark_keywords if kw.lower() in text.lower()]
+
+    facts = []
+    for item in number_hits[:max_items]:
+        facts.append(f"关键数字：{item}")
+    for item in benchmark_hits[:max_items]:
+        facts.append(f"评测线索：{item}")
+
+    unique = []
+    for item in facts:
+        if item not in unique:
+            unique.append(item)
+    return unique[:max_items]
+
+
+def _sanitize_generated_text(text):
+    """清理模型输出中的无效修饰和多余格式。"""
+    content = str(text or "").strip()
+    content = content.replace("###", "").replace("**", "")
+    for noisy_word in ["革命性", "颠覆性", "史诗级", "爆炸性"]:
+        content = content.replace(noisy_word, "显著")
+    return content
+
+
+def _enforce_quality(parsed, article):
+    """统一质量门控：事实线索、结构化深度解析、更强落地建议。"""
+    normalized = _ensure_rich_output(parsed, article)
+
+    normalized["concept_name"] = _sanitize_generated_text(normalized.get("concept_name", ""))
+    normalized["tag"] = _sanitize_generated_text(normalized.get("tag", ""))
+    normalized["one_sentence_desc"] = _sanitize_generated_text(normalized.get("one_sentence_desc", ""))
+    deep_analysis = _sanitize_generated_text(normalized.get("deep_analysis", ""))
+
+    has_structure = all(
+        marker in deep_analysis
+        for marker in ["痛点与背景", "核心做法", "效果与价值", "边界与建议"]
+    )
+
+    if not has_structure:
+        deep_analysis = (
+            f"痛点与背景：该方向常见瓶颈在效果、成本或可靠性之间难以兼顾。\n"
+            f"核心做法：据摘要，论文主要通过结构、训练或数据策略改造实现提升。\n"
+            f"效果与价值：对工程团队的核心价值是提升质量稳定性并降低试错成本。\n"
+            f"边界与建议：建议先以离线评测+小流量灰度验证，不要直接全量上线。"
+        )
+
+    facts = _extract_key_facts(article)
+    signals = article.get("signals", [])
+    fact_lines = []
+    if signals:
+        fact_lines.append(f"筛选信号：{', '.join(signals[:4])}")
+    fact_lines.extend(facts)
+    if fact_lines:
+        deep_analysis = deep_analysis.rstrip() + "\n可验证线索：" + "；".join(fact_lines)
+
+    normalized["deep_analysis"] = deep_analysis
+    return normalized
+
+
 def build_fallback_insight(article):
     """DeepSeek 全部重试失败时的降级方案，保证前端有稳定输出。"""
     title = article.get("title", "Unknown Paper")
     summary = article.get("raw_text", "")
     concept = title.split(":")[0][:80] if ":" in title else title[:80]
-    return _ensure_rich_output({
+    return _enforce_quality({
         "concept_name": concept,
         "tag": "论文速览",
         "one_sentence_desc": f"该论文围绕“{concept}”提出新方法，聚焦提升模型能力与推理/训练效率。",
@@ -458,6 +527,14 @@ def analyze_with_deepseek(article, max_retry=3):
         "Authorization": f"Bearer {DEEPSEEK_API_KEY}"
     }
 
+    quality_hints = []
+    if article.get("signals"):
+        quality_hints.append("筛选信号：" + ", ".join(article.get("signals", [])[:5]))
+    facts = _extract_key_facts(article)
+    if facts:
+        quality_hints.append("可验证线索：" + "；".join(facts))
+    quality_text = "\n".join(quality_hints) if quality_hints else "可验证线索：据摘要提炼"
+
     prompt = f"""你是一位服务AI行业从业者（产品经理、工程师、创业者）的技术观察员。请阅读以下Arxiv论文摘要，提取其中最核心的1个技术概念或创新点。
 
 编辑原则（必须遵守）：
@@ -472,10 +549,12 @@ def analyze_with_deepseek(article, max_retry=3):
    - deep_analysis：至少220字，且按以下四段组织（可用换行分隔）：
      痛点与背景 / 核心做法 / 效果与价值 / 边界与建议
 6. 如果摘要未给出量化指标，明确写“据摘要未给出量化指标”
+7. 禁止空话套话；每段至少包含一个可执行判断或验证建议
 {_FEW_SHOT_EXAMPLE}
 现在请处理以下论文：
 【标题】：{article['title']}
 【摘要】：{article['raw_text'][:1400]}
+【补充线索】：{quality_text}
 
 严格输出合法JSON，包含且仅包含：concept_name、tag、one_sentence_desc、deep_analysis。"""
 
@@ -489,7 +568,7 @@ def analyze_with_deepseek(article, max_retry=3):
             {"role": "user", "content": prompt}
         ],
         "response_format": {"type": "json_object"},
-        "temperature": 0.45,
+        "temperature": 0.35,
         "top_p": 0.9,
         "max_tokens": 1400
     }
@@ -509,7 +588,7 @@ def analyze_with_deepseek(article, max_retry=3):
                 raw_content = raw_content[:-3]
 
             parsed = json.loads(raw_content)
-            return _ensure_rich_output(parsed, article)
+            return _enforce_quality(parsed, article)
 
         except Exception as e:
             wait = 2 ** attempt
