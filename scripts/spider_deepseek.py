@@ -56,17 +56,48 @@ def _ensure_single_paragraph(text):
     return cleaned.strip()
 
 
-def _ensure_emphasis(text, concept_name):
+def _count_bold_segments(text):
+    return len(re.findall(r"\*\*[^*]+\*\*", text or ""))
+
+
+def _ensure_emphasis(text, concept_name, facts=None):
     result = text
-    if "**" not in result and concept_name:
+    if _count_bold_segments(result) == 0 and concept_name:
         key = concept_name[:18]
         if key and key in result:
             result = result.replace(key, f"**{key}**", 1)
+
+    if facts:
+        for fact in facts[:2]:
+            fact_key = fact[:12]
+            if fact_key and fact_key in result and f"**{fact_key}**" not in result:
+                result = result.replace(fact_key, f"**{fact_key}**", 1)
+
     for marker in ["核心改动", "落地价值", "上线建议"]:
         if marker in result and f"**{marker}**" not in result:
             result = result.replace(marker, f"**{marker}**", 1)
-    if "**" not in result:
+
+    if _count_bold_segments(result) < 3:
+        for marker in ["方法", "价值", "风险"]:
+            if marker in result and f"**{marker}**" not in result:
+                result = result.replace(marker, f"**{marker}**", 1)
+                if _count_bold_segments(result) >= 3:
+                    break
+
+    if _count_bold_segments(result) < 3:
+        for marker in ["痛点", "效率", "成本", "效果", "泛化"]:
+            if marker in result and f"**{marker}**" not in result:
+                result = result.replace(marker, f"**{marker}**", 1)
+                if _count_bold_segments(result) >= 3:
+                    break
+
+    if _count_bold_segments(result) < 3:
         result = f"**核心结论**：{result}"
+
+    if _count_bold_segments(result) < 3:
+        fallback_marks = ["**方法可行性**", "**业务价值**", "**上线风险**"]
+        missing = 3 - _count_bold_segments(result)
+        result = result.rstrip("。") + "，" + "，".join(fallback_marks[:missing]) + "。"
     return result
 
 
@@ -95,7 +126,8 @@ def _enforce_quality(parsed, article):
     if facts:
         deep_analysis = deep_analysis.rstrip("。") + f"，可验证线索包括{'、'.join(facts)}。"
 
-    deep_analysis = _ensure_emphasis(deep_analysis, concept_name)
+    deep_analysis = _ensure_single_paragraph(deep_analysis)
+    deep_analysis = _ensure_emphasis(deep_analysis, concept_name, facts)
 
     return {
         "concept_name": concept_name,
@@ -142,7 +174,7 @@ def analyze_with_deepseek(article, max_retry=3):
 1. 仅输出 JSON，字段仅包含 concept_name、tag、one_sentence_desc、deep_analysis。
 2. deep_analysis 必须是单段落，不允许分点、不允许换行、不允许列表符号。
 3. deep_analysis 字数建议 220~320 字，内容包含：痛点、方法、价值、上线建议，但必须写成自然段。
-4. 对关键内容使用 Markdown 粗体（**关键词**）标记，至少 2 处。
+4. 对关键内容使用 Markdown 粗体（**关键词**）标记，至少 3 处。
 5. 不夸张，不写“革命性”等词；不确定信息标注“据摘要”。
 
 {_FEW_SHOT_EXAMPLE}
