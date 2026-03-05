@@ -1,7 +1,7 @@
 import argparse
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from spider_config import DEDUP_DAYS, HF_DAYS_BACK, MAX_RESULTS, MAX_WORKERS, RECENT_DAYS
 from spider_deepseek import analyze_with_deepseek
@@ -52,9 +52,16 @@ def run_pipeline(dry_run=False):
 
 def write_outputs(radar_data):
     output_file = "latest-radar.js"
+    now_utc = datetime.now(timezone.utc)
+    now_bj = now_utc.astimezone(timezone(timedelta(hours=8)))
+    meta = {
+        "generated_at_utc": now_utc.strftime("%Y-%m-%d %H:%M:%S"),
+        "generated_at_beijing": now_bj.strftime("%Y-%m-%d %H:%M:%S"),
+    }
     js_content = (
         "// 本文件由 GitHub Actions 每日触发，通过 Arxiv + HuggingFace + DeepSeek 自动生成\n"
-        f"// 生成时间(UTC): {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')}\n"
+        f"// 生成时间(UTC): {meta['generated_at_utc']}\n"
+        f"window.dailyRadarMeta = {json.dumps(meta, ensure_ascii=False)};\n"
         f"window.dailyRadarData = {json.dumps(radar_data, ensure_ascii=False, indent=2)};\n"
     )
     with open(output_file, "w", encoding="utf-8") as f:

@@ -27,6 +27,7 @@
 
     <section id="ai-radar-container" class="radar hidden">
       <h2 class="radar-title">DeepSeek 每日雷达 · 前沿技术追踪</h2>
+      <p id="radar-generated-time" class="radar-meta hidden"></p>
       <div id="radar-cards" class="radar-grid"></div>
     </section>
 
@@ -48,7 +49,9 @@
     (() => {
       const radarWrap = document.getElementById('ai-radar-container');
       const radarCardsContainer = document.getElementById('radar-cards');
+      const radarGeneratedTime = document.getElementById('radar-generated-time');
       const radarData = Array.isArray(window.dailyRadarData) ? window.dailyRadarData : [];
+      const radarMeta = (window.dailyRadarMeta && typeof window.dailyRadarMeta === 'object') ? window.dailyRadarMeta : null;
       if (!radarWrap || !radarCardsContainer || !radarData.length) return;
 
       const escapeHtml = (text) => String(text || '')
@@ -96,6 +99,14 @@
       }).join('');
 
       radarCardsContainer.innerHTML = cards;
+      if (radarGeneratedTime && radarMeta) {
+        const bj = radarMeta.generated_at_beijing || '';
+        const utc = radarMeta.generated_at_utc || '';
+        if (bj || utc) {
+          radarGeneratedTime.textContent = `抓取时间：北京时间 ${bj || '-'}（UTC ${utc || '-'}）`;
+          radarGeneratedTime.classList.remove('hidden');
+        }
+      }
       radarWrap.classList.remove('hidden');
     })();
   </script>

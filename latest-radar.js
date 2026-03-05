@@ -1,14 +1,15 @@
 // 本文件由 GitHub Actions 每日触发，通过 Arxiv + HuggingFace + DeepSeek 自动生成
-// 生成时间(UTC): 2026-03-05 06:45:24
+// 生成时间(UTC): 2026-03-05 07:06:55
+window.dailyRadarMeta = {"generated_at_utc": "2026-03-05 07:06:55", "generated_at_beijing": "2026-03-05 15:06:55"};
 window.dailyRadarData = [
   {
-    "vendor": "Arxiv: Zijian Chen et al.",
+    "vendor": "Arxiv: Yixin Chen et al.",
     "date": "2026-03-04",
-    "url": "http://arxiv.org/abs/2603.04384v1",
-    "concept_name": "AgentIR（推理感知检索）",
-    "tag": "检索增强",
-    "one_sentence_desc": "AgentIR利用深度研究代理的显式推理轨迹来增强检索效果，据摘要显示在基准测试中显著超越传统方法。",
-    "deep_analysis": "这项工作的**核心痛点**在于现有检索系统忽略深度研究代理生成的显式推理信号，导致检索结果可能偏离代理的真实意图；其**方法创新**包括引入推理感知检索范式，将代理的推理轨迹与查询联合嵌入，以及开发DR Synth数据合成方法从标准QA数据集生成训练数据，据摘要显示两者独立有效且结合后训练出AgentIR 4B模型；其**落地价值**体现在AgentIR 4B在BrowseComp Plus基准上达到68%准确率，优于传统嵌入模型和BM25，对从业者的**上线建议**是优先在代理驱动的研发或分析场景中试点，验证其在不同推理风格和数据集上的泛化能力，并关注模型规模与性能的平衡，可验证线索包括关键数字1、关键数字2、关键数字4B。",
+    "url": "http://arxiv.org/abs/2603.04348v1",
+    "concept_name": "RANGER",
+    "tag": "论文速览",
+    "one_sentence_desc": "该论文围绕RANGER提出改进方案，聚焦效果、效率与可部署性的平衡。",
+    "deep_analysis": "这篇论文围绕**RANGER**提出方法改进，主要通过模型结构、训练策略或数据流程优化来改善效果与效率；据摘要可见其关注点在工程可用性与泛化表现的平衡，核心线索包括“Pathology report generation remains a relatively under explored downstream task, primarily due to the gigapixel scale an...”，对团队的**落地价值**在于降低试错成本并提升迭代速度，但在正式上线前仍建议基于你的业务数据进行小流量灰度验证，可验证线索包括**关键数字1**、**关键数字4**、关键数字0.4598。",
     "tier": "featured",
     "score": 1,
     "signals": [
@@ -16,13 +17,13 @@ window.dailyRadarData = [
     ]
   },
   {
-    "vendor": "Arxiv: Maximilian von Klinski et al.",
+    "vendor": "Arxiv: Clarissa Loures et al.",
     "date": "2026-03-04",
-    "url": "http://arxiv.org/abs/2603.04380v1",
-    "concept_name": "TaxonRL（基于强化学习的细粒度视觉推理）",
-    "tag": "细粒度视觉推理",
-    "one_sentence_desc": "TaxonRL通过强化学习中的中间奖励机制，将细粒度视觉分类分解为层次化推理过程，在提升准确率的同时提供可解释的决策路径。",
-    "deep_analysis": "这项技术针对传统视觉语言模型在**细粒度分类**中难以区分视觉相似物种的痛点，提出了一种基于强化学习的层次化推理方法；其核心方法是通过Group Relative Policy Optimization引入中间奖励，强制模型在最终分类前依次推理物种、属、科级别的特征，据摘要显示在Birds to Words数据集上达到**91.7%的准确率**，超过人类表现的77.3%，并展示了跨领域泛化能力；其价值在于同时提升分类精度和决策可解释性，为生物鉴定等场景提供透明、可验证的推理过程；**上线建议**需在实际业务中验证其推理路径的实用性和计算效率，并针对特定领域数据优化奖励函数设计，可验证线索包括关键数字91.7、关键数字77.3。",
+    "url": "http://arxiv.org/abs/2603.04343v1",
+    "concept_name": "Enhancing Authorship Attribution with Synthetic Paintings",
+    "tag": "论文速览",
+    "one_sentence_desc": "该论文围绕Enhancing Authorship Attribution with Synthetic Paintings提出改进方案，聚焦效果、效率与可部署性的平衡。",
+    "deep_analysis": "这篇论文围绕**Enhancing Authorship Attribution with Synthetic Paintings**提出**方法**改进，主要通过模型结构、训练策略或数据流程优化来改善效果与效率；据摘要可见其关注点在工程可用性与泛化表现的平衡，核心线索包括“Attributing authorship to paintings is a historically complex task, and one of its main challenges is the limited availa...”，对团队的**落地价值**在于降低试错成本并提升迭代速度，但在正式上线前仍建议基于你的业务数据进行小流量灰度验证。",
     "tier": "featured",
     "score": 1,
     "signals": [
@@ -30,13 +31,13 @@ window.dailyRadarData = [
     ]
   },
   {
-    "vendor": "Arxiv: Furkan Mumcu et al.",
+    "vendor": "Arxiv: Madhura Edirisooriya et al.",
     "date": "2026-03-04",
-    "url": "http://arxiv.org/abs/2603.04378v1",
-    "concept_name": "Adversarially-Aligned Jacobian Regularization (AAJR)",
-    "tag": "多智能体系统鲁棒性",
-    "one_sentence_desc": "AAJR通过沿对抗性上升方向控制雅可比矩阵敏感性，在提升多智能体系统鲁棒性的同时减少性能损失。",
-    "deep_analysis": "这项研究针对大语言模型向自主多智能体生态系统演进时面临的**鲁棒性训练痛点**：传统全局雅可比约束方法因抑制所有方向的敏感性而过于保守，导致显著的性能退化代价。AAJR提出了一种轨迹对齐方法，专门控制沿对抗性上升方向的敏感性，据摘要证明在温和条件下能提供比全局约束更大的可容许策略类别，意味着更小的近似差距和减少的名义性能损失。其**核心价值**在于为智能体鲁棒性提供了结构理论，将极小极大稳定性与全局表达能力限制解耦，使系统在对抗环境中保持稳定而不牺牲基础性能。**上线建议**需在实际多智能体场景中验证其在不同攻击强度和策略复杂度下的有效性，并评估计算开销与稳定性提升的平衡。",
+    "url": "http://arxiv.org/abs/2603.04340v1",
+    "concept_name": "Balancing Fidelity, Utility, and Privacy in Synthetic Cardiac MRI Generation",
+    "tag": "论文速览",
+    "one_sentence_desc": "该论文围绕Balancing Fidelity, Utility, and Privacy in Synthetic Cardiac MRI Generation提出改进方案，聚焦效果、效率与可部署性的平衡。",
+    "deep_analysis": "这篇论文围绕**Balancing Fidelity, Utility, and Privacy in Synthetic Cardiac MRI Generation**提出方法改进，主要通过模型结构、训练策略或数据流程优化来改善效果与效率；据摘要可见其关注点在工程可用性与泛化表现的平衡，核心线索包括“Deep learning in cardiac MRI (CMR) is fundamentally constrained by both data scarcity and privacy regulations. This stud...”，对团队的**落地价值**在于降低试错成本并提升迭代速度，但在正式上线前仍建议基于你的业务数据进行小流量灰度验证，可验证线索包括**评测FID**。",
     "tier": "featured",
     "score": 1,
     "signals": [
@@ -44,13 +45,13 @@ window.dailyRadarData = [
     ]
   },
   {
-    "vendor": "Arxiv: Quan Shi et al.",
+    "vendor": "Arxiv: Zihao Huang et al.",
     "date": "2026-03-04",
-    "url": "http://arxiv.org/abs/2603.04370v1",
-    "concept_name": "τ-Knowledge（τ-知识评估框架）",
-    "tag": "对话智能体评估",
-    "one_sentence_desc": "τ-Knowledge通过模拟真实金融客服场景，评估对话智能体在非结构化知识库中检索、协调工具使用以完成合规状态变更的能力。",
-    "deep_analysis": "当前对话智能体在知识密集型场景部署时面临**评估脱节**的痛点，现有基准多独立测试检索或工具使用，缺乏对长程交互中知识整合的全面评估。τ Knowledge通过扩展τ Bench框架，引入τ Banking领域模拟真实金融客服工作流，要求智能体在约700份互连文档中检索知识，协调工具输出以完成可验证的合规状态更新。该方法的核心价值在于提供了**现实测试平台**，据摘要显示，即使前沿模型在高推理预算下也仅达到约25.5%的通过率，且可靠性在重复试验中急剧下降，突显智能体在密集互连知识库中检索准确文档及对复杂内部政策进行精确推理的困难。**上线建议**包括在部署前使用类似τ Knowledge的集成评估验证智能体知识整合稳定性，并关注业务场景中知识库互联性与政策复杂性对性能的影响，可验证线索包括关键数字700、关键数字25.5、关键数字1。",
+    "url": "http://arxiv.org/abs/2603.04338v1",
+    "concept_name": "ArtHOI",
+    "tag": "论文速览",
+    "one_sentence_desc": "该论文围绕ArtHOI提出改进方案，聚焦效果、效率与可部署性的平衡。",
+    "deep_analysis": "这篇论文围绕**ArtHOI**提出方法改进，主要通过模型结构、训练策略或数据流程优化来改善效果与效率；据摘要可见其关注点在工程可用性与泛化表现的平衡，核心线索包括“Synthesizing physically plausible articulated human object interactions (HOI) without 3D/4D supervision remains a fundam...”，对团队的**落地价值**在于降低试错成本并提升迭代速度，但在正式上线前仍建议基于你的业务数据进行小流量灰度验证，可验证线索包括**关键数字1**、**关键数字2**、评测FID。",
     "tier": "notable",
     "score": 1,
     "signals": [
@@ -58,13 +59,13 @@ window.dailyRadarData = [
     ]
   },
   {
-    "vendor": "Arxiv: Zachary Novack et al.",
+    "vendor": "Arxiv: Dacheng Qi et al.",
     "date": "2026-03-04",
-    "url": "http://arxiv.org/abs/2603.04366v1",
-    "concept_name": "LatCHs（潜在控制头）",
-    "tag": "可控音频生成",
-    "one_sentence_desc": "LatCHs通过选择性TFG和潜在空间操作，在低资源下实现音频扩散模型的高效可控生成，据摘要可降低计算开销并保持质量。",
-    "deep_analysis": "这项工作的**核心痛点**在于现有可控音频生成方法通常需要高成本模型重训练或推理时计算密集的引导，限制了实际应用；其**方法创新**是通过引入选择性TFG和LatCHs，直接在潜在空间操作，避免了昂贵的解码器反向传播步骤，从而显著降低计算开销，据摘要仅需7M参数和约4小时训练；**价值体现**在于平衡了生成精度与音频保真度，同时大幅减少资源需求，对从业者而言，这有助于在有限算力下实现更灵活的音频控制；**上线建议**是结合业务场景验证其在强度、音高和节拍等控制维度上的泛化能力，并参考FID评测确保质量稳定性，但需注意摘要未提供具体FID数据，建议进一步测试，可验证线索包括关键数字7M、关键数字4、评测FID。",
+    "url": "http://arxiv.org/abs/2603.04337v1",
+    "concept_name": "Pointer-CAD",
+    "tag": "论文速览",
+    "one_sentence_desc": "该论文围绕Pointer-CAD提出改进方案，聚焦效果、效率与可部署性的平衡。",
+    "deep_analysis": "这篇论文围绕**Pointer CAD**提出方法改进，主要通过模型结构、训练策略或数据流程优化来改善效果与效率；据摘要可见其关注点在工程可用性与泛化表现的平衡，核心线索包括“Constructing computer aided design (CAD) models is labor intensive but essential for engineering and manufacturing. Rece...”，对团队的**落地价值**在于降低试错成本并提升迭代速度，但在正式上线前仍建议基于你的业务数据进行小流量灰度验证，可验证线索包括**关键数字575K**。",
     "tier": "notable",
     "score": 1,
     "signals": [
@@ -72,13 +73,13 @@ window.dailyRadarData = [
     ]
   },
   {
-    "vendor": "Arxiv: Kenan Majewski et al.",
+    "vendor": "Arxiv: Rocky Klopfenstein et al.",
     "date": "2026-03-04",
-    "url": "http://arxiv.org/abs/2603.04360v1",
-    "concept_name": "MA-UKF（元自适应无迹卡尔曼滤波）",
-    "tag": "非线性状态估计",
-    "one_sentence_desc": "MA-UKF通过元学习框架动态调整无迹变换的权重参数，提升滤波器在时变动态和非高斯噪声下的鲁棒性。",
-    "deep_analysis": "传统无迹卡尔曼滤波的**静态权重参数化**难以适应时变动态或重尾噪声，导致估计性能受限；MA UKF将权重合成重构为超参数优化问题，利用循环上下文编码器压缩测量新息历史，通过策略网络动态生成每个时间步的sigma点权重，从而在预测与测量间实现自适应权衡；据摘要，该方法通过端到端优化递归逻辑，在保持估计一致性的同时最大化跟踪精度，对工程应用的**核心价值**在于提升系统在非高斯噪声和分布外场景下的鲁棒性；**上线建议**需在实际系统中验证计算开销与实时性要求，并针对具体传感器特性调整元学习训练策略。",
+    "url": "http://arxiv.org/abs/2603.04334v1",
+    "concept_name": "SpotIt+",
+    "tag": "论文速览",
+    "one_sentence_desc": "该论文围绕SpotIt+提出改进方案，聚焦效果、效率与可部署性的平衡。",
+    "deep_analysis": "这篇论文围绕**SpotIt+**提出**方法**改进，主要通过模型结构、训练策略或数据流程优化来改善效果与效率；据摘要可见其关注点在工程可用性与泛化表现的平衡，核心线索包括“We present SpotIt+, an open source tool for evaluating Text to SQL systems via bounded equivalence verification. Given a...”，对团队的**落地价值**在于降低试错成本并提升迭代速度，但在正式上线前仍建议基于你的业务数据进行小流量灰度验证。",
     "tier": "notable",
     "score": 1,
     "signals": [

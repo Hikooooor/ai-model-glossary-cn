@@ -141,6 +141,12 @@ h1 {
   line-height: 1.3;
 }
 
+.radar-meta {
+  margin: -6px 0 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 .radar-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
