@@ -385,25 +385,37 @@ _FEW_SHOT_EXAMPLE = """
 {
   "concept_name": "LoRA（低秩适配微调）",
   "tag": "大模型微调",
-  "one_sentence_desc": "LoRA通过在Transformer层中注入极少量可训练的低秩矩阵，实现了冻结原始权重前提下的高效领域微调，让普通GPU也能驯服百亿参数大模型。",
-  "deep_analysis": "传统全参数微调需更新模型全部权重，成本极高。LoRA只训练新增的低秩分解矩阵（通常仅占原参数量0.1%-1%），推理时合并回原权重无额外开销。这让企业用少量标注数据、单卡GPU即可定制高质量专用模型，据论文实验在GLUE等任务上与全参数微调持平，大幅降低算力门槛。"
+  "one_sentence_desc": "LoRA通过在Transformer层注入低秩可训练矩阵，在冻结主干参数的前提下实现低成本微调，使企业能够以更低算力完成场景化模型适配。",
+  "deep_analysis": "痛点与背景：全参数微调需要更新全部权重，训练资源和显存占用高，迭代周期长。\n核心做法：LoRA仅训练低秩适配参数，将更新限制在少量新增矩阵，保持原模型主体不变。\n效果与价值：据摘要与公开实验，LoRA显著减少可训练参数规模，常见设置下仅占原模型极小比例，在接近原效果的同时降低训练成本与部署复杂度。\n边界与建议：该方法对任务类型和秩设置敏感，落地时建议结合业务数据做小规模网格搜索，并保留全参数微调作为关键任务对照基线。"
 }
 """
 
 
-def build_fallback_insight(article):
-    """DeepSeek 全部重试失败时的降级方案，保证前端有稳定输出。"""
-    title = article.get("title", "Unknown Paper")
+def _ensure_rich_output(parsed, article):
+    """补齐字段并兜底增强文案厚度，保证前端展示稳定。"""
+    title = article.get("title", "")
     summary = article.get("raw_text", "")
-    concept = title.split(":")[0][:80] if ":" in title else title[:80]
+
+    concept_name = str(parsed.get("concept_name") or "").strip() or (title.split(":")[0][:80] if ":" in title else title[:80] or "Unknown Concept")
+    tag = str(parsed.get("tag") or "").strip() or "论文速览"
+    one_sentence_desc = str(parsed.get("one_sentence_desc") or "").strip()
+    if not one_sentence_desc:
+        one_sentence_desc = f"该论文围绕“{concept_name}”提出方法改进，重点影响模型效果、效率或可落地性。"
+
+    deep_analysis = str(parsed.get("deep_analysis") or "").strip()
+    if len(deep_analysis) < 180:
+        deep_analysis = (
+            f"痛点与背景：该方向通常面临效果、成本或稳定性之间的权衡，传统方案在真实业务中存在实施门槛。\n"
+            f"核心做法：据摘要，论文通过模型结构、训练策略或数据流程改造来提升表现，关键信息为：{summary[:180]}...\n"
+            f"效果与价值：从业者价值在于可提升任务质量并降低试错成本，建议优先在小流量场景验证。\n"
+            f"边界与建议：应重点评估泛化能力、推理成本和工程复杂度，并以原论文实验配置作为复现基准。"
+        )
+
     return {
-        "concept_name": concept,
-        "tag": "论文速览",
-        "one_sentence_desc": f"该论文围绕\"{concept}\"提出新方法，聚焦提升模型能力与推理/训练效率。",
-        "deep_analysis": (
-            f"核心思路（据摘要）：{summary[:120]}... "
-            "该工作通常通过结构改造、训练策略或评测设计改善精度、泛化与成本的平衡，以原论文为准。"
-        ),
+        "concept_name": concept_name,
+        "tag": tag,
+        "one_sentence_desc": one_sentence_desc,
+        "deep_analysis": deep_analysis,
         "vendor": article.get("vendor", "Arxiv Researcher"),
         "date": article.get("date", datetime.now(timezone.utc).strftime("%Y-%m-%d")),
         "url": article.get("url", "https://arxiv.org"),
@@ -411,6 +423,24 @@ def build_fallback_insight(article):
         "score": article.get("score", 0),
         "signals": article.get("signals", [])
     }
+
+
+def build_fallback_insight(article):
+    """DeepSeek 全部重试失败时的降级方案，保证前端有稳定输出。"""
+    title = article.get("title", "Unknown Paper")
+    summary = article.get("raw_text", "")
+    concept = title.split(":")[0][:80] if ":" in title else title[:80]
+    return _ensure_rich_output({
+        "concept_name": concept,
+        "tag": "论文速览",
+        "one_sentence_desc": f"该论文围绕“{concept}”提出新方法，聚焦提升模型能力与推理/训练效率。",
+        "deep_analysis": (
+            f"痛点与背景：现有方案在效果、资源消耗或稳定性上存在瓶颈。\n"
+            f"核心做法：据摘要，论文提出的关键改动为：{summary[:160]}...\n"
+            f"效果与价值：该方案有望在真实业务中改善质量与成本平衡。\n"
+            f"边界与建议：建议结合你的数据与评测集做小规模复现，再决定是否进入生产。"
+        )
+    }, article)
 
 
 def analyze_with_deepseek(article, max_retry=3):
@@ -435,10 +465,17 @@ def analyze_with_deepseek(article, max_retry=3):
 2. 从业者视角：重点是"这对我有什么用/影响"，而不是堆砌学术术语
 3. 保持克制：不使用"突破性""革命性"等夸张措辞；不确定之处标注"据摘要"
 4. 具体量化：如果摘要有性能数字，请引用（如"比baseline快2倍"）
+5. 输出要有信息密度：
+   - concept_name：优先中文名，可附英文缩写
+   - tag：必须具体，如“推理优化/多模态对齐/数据合成”
+   - one_sentence_desc：40~90字，强调业务价值
+   - deep_analysis：至少220字，且按以下四段组织（可用换行分隔）：
+     痛点与背景 / 核心做法 / 效果与价值 / 边界与建议
+6. 如果摘要未给出量化指标，明确写“据摘要未给出量化指标”
 {_FEW_SHOT_EXAMPLE}
 现在请处理以下论文：
 【标题】：{article['title']}
-【摘要】：{article['raw_text'][:800]}
+【摘要】：{article['raw_text'][:1400]}
 
 严格输出合法JSON，包含且仅包含：concept_name、tag、one_sentence_desc、deep_analysis。"""
 
@@ -452,7 +489,9 @@ def analyze_with_deepseek(article, max_retry=3):
             {"role": "user", "content": prompt}
         ],
         "response_format": {"type": "json_object"},
-        "temperature": 0.3
+        "temperature": 0.45,
+        "top_p": 0.9,
+        "max_tokens": 1400
     }
 
     for attempt in range(max_retry):
@@ -470,13 +509,7 @@ def analyze_with_deepseek(article, max_retry=3):
                 raw_content = raw_content[:-3]
 
             parsed = json.loads(raw_content)
-            parsed["vendor"] = article["vendor"]
-            parsed["date"] = article["date"]
-            parsed["url"] = article["url"]
-            parsed["tier"] = article.get("tier", "notable")
-            parsed["score"] = article.get("score", 0)
-            parsed["signals"] = article.get("signals", [])
-            return parsed
+            return _ensure_rich_output(parsed, article)
 
         except Exception as e:
             wait = 2 ** attempt
