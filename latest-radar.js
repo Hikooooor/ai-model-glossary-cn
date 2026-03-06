@@ -1,85 +1,75 @@
 // 本文件由 GitHub Actions 每日触发，通过 Arxiv + HuggingFace + DeepSeek 自动生成
-// 生成时间(UTC): 2026-03-05 09:18:50
-window.dailyRadarMeta = {"generated_at_utc": "2026-03-05 09:18:50", "generated_at_beijing": "2026-03-05 17:18:50"};
+// 生成时间(UTC): 2026-03-06 01:09:01
+window.dailyRadarMeta = {"generated_at_utc": "2026-03-06 01:09:01", "generated_at_beijing": "2026-03-06 09:09:01"};
 window.dailyRadarData = [
   {
-    "vendor": "Arxiv: Harman Singh et al.",
+    "vendor": "Arxiv: Bhavya Agrawalla et al.",
     "date": "2026-03-04",
-    "url": "http://arxiv.org/abs/2603.04304v1",
-    "concept_name": "$V_1$",
-    "tag": "论文速览",
-    "one_sentence_desc": "该论文围绕$V_1$提出改进方案，聚焦效果、效率与可部署性的平衡。",
-    "deep_analysis": "**核心结论**：该工作围绕**$V_1$**提出方法改进，关键做法是通过模型结构、训练策略或数据流程优化来改善效果与效率；据摘要，重点在于工程可用性与泛化表现的平衡，核心线索包括“Test time scaling for complex reasoning tasks shows that leveraging inference time compute, by methods such as independe...”，对业务侧的**落地价值**在于降低试错成本并提升迭代速度，**上线建议**：正式上线前建议基于你的业务数据进行小流量灰度验证。",
+    "url": "http://arxiv.org/abs/2603.04333v1",
+    "concept_name": "Flow Matching for TD Learning",
+    "tag": "强化学习",
+    "one_sentence_desc": "Flow Matching通过积分读出值和密集速度监督，提升TD学习中的价值预测鲁棒性和特征可塑性，据摘要在最终性能和样本效率上显著超越传统批评者。",
+    "deep_analysis": "**核心结论**：Flow Matching方法在强化学习中用于标量Q值函数估计，据摘要通过积分读出值和每一步的密集速度监督，实现比传统批评者 **2倍** 的最终性能提升和约 **5倍** 的样本效率提升，其成功并非源于分布RL，而是通过 **测试时恢复** 和 **可塑性特征学习** 机制；**落地价值**在于为工程团队提供更高效的RL训练方案，减少数据收集成本并加速模型收敛，适用于需要处理非平稳TD目标的复杂环境；**上线建议**：实施时需验证积分步数对误差阻尼的影响，避免过度计算开销，同时监控特征学习过程以防止过拟合，确保在目标环境中保持泛化能力。",
     "tier": "featured",
-    "score": 1,
-    "signals": [
-      "从业者相关"
-    ]
+    "score": 0,
+    "signals": []
   },
   {
-    "vendor": "Arxiv: Zeyi Lu et al.",
+    "vendor": "Arxiv: Damian J. Ruck et al.",
     "date": "2026-03-04",
-    "url": "http://arxiv.org/abs/2603.04299v1",
-    "concept_name": "The Company You Keep",
-    "tag": "论文速览",
-    "one_sentence_desc": "该论文围绕The Company You Keep提出改进方案，聚焦效果、效率与可部署性的平衡。",
-    "deep_analysis": "**核心结论**：该工作围绕**The Company You Keep**提出方法改进，关键做法是通过模型结构、训练策略或数据流程优化来改善效果与效率；据摘要，重点在于工程可用性与泛化表现的平衡，核心线索包括“Large Language Models (LLMs) often exhibit highly agreeable and reinforcing conversational styles, also known as AI syco...”，对业务侧的**落地价值**在于降低试错成本并提升迭代速度，**上线建议**：正式上线前建议基于你的业务数据进行小流量灰度验证。",
+    "url": "http://arxiv.org/abs/2603.04325v1",
+    "concept_name": "合成环境增强图像的真实性评估框架",
+    "tag": "数据合成",
+    "one_sentence_desc": "该框架通过**VLM评审**和**嵌入分布分析**两种自动化指标，可扩展地评估合成图像编辑方法在模拟环境条件（如雾、雨、雪、夜间）时的真实性，帮助团队筛选高质量合成数据用于AI系统评测。",
+    "deep_analysis": "**核心结论**：该框架提出了一种可扩展的方法来评估合成图像编辑的真实性，应用于车载摄像头图像添加环境条件（雾、雨、雪、夜间），据摘要显示，最佳生成式AI方法在**接受率**上比最佳规则方法高出约**3.6倍**，但不同条件模拟难度各异，雾最容易而夜间最具挑战性；**落地价值**在于为工程团队提供自动化工具，快速筛选高质量合成数据，减少对稀缺真实数据的依赖，加速AI系统在安全关键场景（如自动驾驶）的评测与迭代；**上线建议**：实施时需注意**VLM评审**对真实图像也给出不完美接受率，这设定了实际性能上限，建议结合业务场景校准阈值，并针对不同环境条件（如夜间）进行专项优化，以避免因合成数据不真实导致评测偏差。",
     "tier": "featured",
-    "score": 1,
-    "signals": [
-      "从业者相关"
-    ]
+    "score": 0,
+    "signals": []
   },
   {
-    "vendor": "Arxiv: Liangwei Yang et al.",
+    "vendor": "Arxiv: Elan Barenholtz et al.",
     "date": "2026-03-04",
-    "url": "http://arxiv.org/abs/2603.04292v1",
-    "concept_name": "Position",
-    "tag": "论文速览",
-    "one_sentence_desc": "该论文围绕Position提出改进方案，聚焦效果、效率与可部署性的平衡。",
-    "deep_analysis": "**核心结论**：该工作围绕**Position**提出方法改进，关键做法是通过模型结构、训练策略或数据流程优化来改善效果与效率；据摘要，重点在于工程可用性与泛化表现的平衡，核心线索包括“As large language models (LLMs) transition from research prototypes to real world systems, customization has emerged as ...”，对业务侧的**落地价值**在于降低试错成本并提升迭代速度，**上线建议**：正式上线前建议基于你的业务数据进行小流量灰度验证。",
+    "url": "http://arxiv.org/abs/2603.04317v1",
+    "concept_name": "静态词嵌入中的世界结构可恢复性",
+    "tag": "预训练方法",
+    "one_sentence_desc": "研究发现简单的静态词嵌入（如GloVe和Word2Vec）通过线性探针就能从文本共现统计中恢复出显著的地理时空结构，无需复杂的世界模型。",
+    "deep_analysis": "**核心结论**：该研究通过**岭回归探针**对静态词嵌入（**GloVe**和**Word2Vec**）进行分析，发现仅从文本共现统计就能线性恢复出丰富的地理时空结构，其中城市坐标的留出**R^2值**达到**0.71 0.87**，历史出生年份的R^2值为**0.48 0.52**，语义邻居分析和子空间消融显示这些信号主要依赖于可解释的词汇梯度如国家名称和气候相关词汇；**落地价值**在于为NLP团队提供了低成本的结构化信息提取方法，无需依赖复杂的大语言模型内部表示，可直接从轻量级嵌入中挖掘地理、时间等结构化知识，降低工程复杂度；**上线建议**：实际应用时需注意这些信号的可靠性可能受文本语料范围和质量的限制，建议在特定领域（如历史分析、地理信息系统）中先验证恢复精度，并考虑结合领域词典增强信号稳定性，避免过度依赖单一线性模型导致泛化不足。",
     "tier": "featured",
-    "score": 1,
-    "signals": [
-      "从业者相关"
-    ]
+    "score": 0,
+    "signals": []
   },
   {
-    "vendor": "Arxiv: Lingen Li et al.",
+    "vendor": "Arxiv: Pranav Kulkarni et al.",
     "date": "2026-03-04",
-    "url": "http://arxiv.org/abs/2603.04291v1",
-    "concept_name": "CubeComposer",
-    "tag": "论文速览",
-    "one_sentence_desc": "该论文围绕CubeComposer提出改进方案，聚焦效果、效率与可部署性的平衡。",
-    "deep_analysis": "**核心结论**：该工作围绕**CubeComposer**提出方法改进，关键做法是通过模型结构、训练策略或数据流程优化来改善效果与效率；据摘要，重点在于工程可用性与泛化表现的平衡，核心线索包括“Generating high quality 360° panoramic videos from perspective input is one of the crucial applications for virtual real...”，对业务侧的**落地价值**在于降低试错成本并提升迭代速度，**上线建议**：正式上线前建议基于你的业务数据进行小流量灰度验证。",
+    "url": "http://arxiv.org/abs/2603.04309v1",
+    "concept_name": "CRESTomics（基于核的加性分类模型）",
+    "tag": "医疗AI",
+    "one_sentence_desc": "CRESTomics通过核基加性模型结合相干损失与组稀疏正则化，从超声图像中提取放射组学特征，实现颈动脉斑块的高风险分类与可视化解释。",
+    "deep_analysis": "**核心结论**：该方法分析 **CREST 2试验** 中的 **500个斑块**，利用B超图像提取放射组学特征，通过核基加性模型结合 **相干损失** 与 **组稀疏正则化** 进行非线性分类，据摘要显示能准确评估斑块风险并揭示斑块纹理与临床风险的强关联；**落地价值**在于为医疗团队提供自动化、可解释的斑块分析工具，辅助医生快速识别高风险患者，优化卒中预防策略，减少人工误判；**上线建议**：部署前需在本地数据集验证模型泛化性，注意超声图像质量与采集协议差异可能影响特征提取，建议结合临床专家反馈调整阈值，并确保符合医疗数据隐私法规。",
     "tier": "notable",
-    "score": 1,
-    "signals": [
-      "从业者相关"
-    ]
+    "score": 0,
+    "signals": []
   },
   {
-    "vendor": "Arxiv: Zhiyi Chen et al.",
+    "vendor": "Arxiv: Hong Li et al.",
     "date": "2026-03-04",
-    "url": "http://arxiv.org/abs/2603.04290v1",
-    "concept_name": "Gaussian Wardrobe",
-    "tag": "论文速览",
-    "one_sentence_desc": "该论文围绕Gaussian Wardrobe提出改进方案，聚焦效果、效率与可部署性的平衡。",
-    "deep_analysis": "**核心结论**：该工作围绕**Gaussian Wardrobe**提出方法改进，关键做法是通过模型结构、训练策略或数据流程优化来改善效果与效率；据摘要，重点在于工程可用性与泛化表现的平衡，核心线索包括“We introduce Gaussian Wardrobe, a novel framework to digitalize compositional 3D neural avatars from multi view videos. ...”，对业务侧的**落地价值**在于降低试错成本并提升迭代速度，**上线建议**：正式上线前建议基于你的业务数据进行小流量灰度验证。",
+    "url": "http://arxiv.org/abs/2603.04302v1",
+    "concept_name": "MMFA（基于无监督关键点定位的运动操控）",
+    "tag": "图像/视频生成",
+    "one_sentence_desc": "MMFA通过自监督表示学习和变分自编码器，在无监督框架下实现面部身份与运动信息的解耦，提升虚拟肖像动画的真实性和可控性。",
+    "deep_analysis": "**核心结论**：MMFA方法引入自监督表示学习来编码和解码表情，结合变分自编码器将表情特征映射到连续高斯分布，据摘要显示在公开数据集上通过 **mAP** 等指标验证，相比现有技术能更有效地解耦身份语义与运动信息（如旋转、平移和表情），实现更真实和可控的面部动画生成；**落地价值**在于为产品团队提供低成本、高灵活性的面部动画工具，无需大量标注数据即可生成逼真虚拟肖像，加速影视、游戏或虚拟助手等应用的开发；**上线建议**：部署前需在目标场景数据上测试解耦效果，注意模型对复杂运动（如极端表情）的泛化能力，避免因解耦不充分导致动画失真或身份泄露风险。",
     "tier": "notable",
-    "score": 1,
-    "signals": [
-      "从业者相关"
-    ]
+    "score": 0,
+    "signals": []
   },
   {
-    "vendor": "Arxiv: Chen Sun et al.",
+    "vendor": "Arxiv: Yijiang Li et al.",
     "date": "2026-03-04",
-    "url": "http://arxiv.org/abs/2603.04383v1",
-    "concept_name": "Turning Trust to Transactions",
-    "tag": "论文速览",
-    "one_sentence_desc": "该论文围绕Turning Trust to Transactions提出改进方案，聚焦效果、效率与可部署性的平衡。",
-    "deep_analysis": "**核心结论**：该工作围绕**Turning Trust to Transactions**提出方法改进，关键做法是通过模型结构、训练策略或数据流程优化来改善效果与效率；据摘要，重点在于工程可用性与泛化表现的平衡，核心线索包括“YouTube has evolved into a powerful platform that where creators monetize their influence through affiliate marketing, r...”，对业务侧的**落地价值**在于降低试错成本并提升迭代速度，**上线建议**：正式上线前建议基于你的业务数据进行小流量灰度验证。",
+    "url": "http://arxiv.org/abs/2603.04300v1",
+    "concept_name": "LUMINA（面向约束科学系统的基座模型框架）",
+    "tag": "科学计算",
+    "one_sentence_desc": "LUMINA为交流最优潮流等约束科学系统设计基座模型，通过平衡物理规律与约束满足，提升计算效率与可靠性。",
+    "deep_analysis": "**核心结论**：LUMINA针对交流最优潮流等约束科学系统，提出基座模型设计原则，据摘要通过系统实验提取三个原则，涉及物理不变表示与系统特定约束的平衡、精度与约束满足的优化、高影响工况下的可靠性；**落地价值**在于加速电网等科学计算任务，通过可重用表示减少重复建模，帮助工程团队在保证安全约束下快速求解优化问题；**上线建议**：应用前需验证模型在具体系统约束下的泛化能力，重点关注 **ACOPF** 等场景的物理方程与操作限制，避免因约束违反导致实际风险，建议结合领域知识进行微调。",
     "tier": "notable",
     "score": 0,
     "signals": []
