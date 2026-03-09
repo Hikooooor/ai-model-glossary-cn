@@ -1,3 +1,5 @@
+"""DeepSeek analysis adapter with strict JSON output and local quality fallback."""
+
 import json
 import re
 import time
@@ -23,7 +25,7 @@ _FEW_SHOT_EXAMPLE = """
   "concept_name": "LoRA（低秩适配微调）",
   "tag": "大模型微调",
   "one_sentence_desc": "LoRA在冻结主干参数的前提下，用低秩矩阵完成低成本微调，让团队在有限算力下更快迭代场景模型。",
-  "deep_analysis": "**核心结论**：LoRA通过在每层Transformer中注入低秩分解矩阵，实现冻结主干参数的前提下高效适配，据摘要可训练参数量最高降低 **10,000倍**，同时保持与全参微调相当的效果；**落地价值**在于显著降低显存占用与训练成本，让中小团队在消费级GPU上完成业务迭代，缩短从实验到上线的周期；**上线建议**：正式使用前需在你的业务评测集上验证，重点关注低秩维度 r 的取值对任务泛化的影响，秩过小可能导致效果明显下降。"
+    "deep_analysis": "核心结论是，LoRA通过在每层Transformer中插入低秩适配矩阵，在冻结主干参数的前提下完成任务适配；据摘要，可训练参数量最高可比全参微调减少10,000x，同时保持接近的任务效果。它的直接价值在于显著降低显存与训练成本，让中小团队更容易在有限GPU资源下快速迭代下游场景。落地时需要重点验证低秩维度r的取值与任务复杂度是否匹配，因为秩设置过小可能削弱泛化能力。"
 }
 """
 
@@ -53,7 +55,9 @@ def _extract_key_facts(article, max_items=4):
 
 
 def _sanitize_text(text):
+    """Normalize whitespace and remove sensational wording for stable display text."""
     content = str(text or "").strip().replace("###", "")
+    content = re.sub(r"\*\*(.*?)\*\*", r"\1", content)
     content = re.sub(r"[\r\n]+", " ", content)
     content = re.sub(r"\s{2,}", " ", content)
     for noisy_word in ["革命性", "颠覆性", "史诗级", "爆炸性"]:
@@ -62,90 +66,69 @@ def _sanitize_text(text):
 
 
 def _ensure_single_paragraph(text):
+    """Collapse generated content into one paragraph required by frontend layout."""
     cleaned = _sanitize_text(text)
     cleaned = re.sub(r"\s*[•\-]\s*", " ", cleaned)
     return cleaned.strip()
-
-
-def _count_bold_segments(text):
-    return len(re.findall(r"\*\*[^*]+\*\*", text or ""))
 
 
 def _refine_keypoint_expression(text):
     """Rewrite common weak phrases to make conclusion/value/risk points more explicit."""
     result = str(text or "")
     replacements = [
-        ("这篇论文围绕", "**核心结论**：该工作围绕"),
+        ("这篇论文围绕", "核心结论是，该工作围绕"),
         ("主要通过", "关键做法是通过"),
         ("据摘要可见", "据摘要，"),
         ("其关注点在", "重点在于"),
         ("对团队的", "对业务侧的"),
-        ("但在正式上线前仍建议", "**上线建议**：正式上线前建议"),
+        ("但在正式上线前仍建议", "上线前建议"),
     ]
     for old, new in replacements:
         if old in result:
             result = result.replace(old, new, 1)
 
     if "上线建议" not in result and "建议" in result:
-        result = result.replace("建议", "**上线建议**：", 1)
+        result = result.replace("建议", "上线建议是", 1)
 
     if "落地价值" not in result and "价值" in result:
-        result = result.replace("价值", "**落地价值**", 1)
+        result = result.replace("价值", "落地价值", 1)
 
     return result
 
 
-def _ensure_emphasis(text, concept_name, facts=None):
-    result = text
-    if _count_bold_segments(result) == 0 and concept_name:
-        key = concept_name[:18]
-        if key and key in result:
-            result = result.replace(key, f"**{key}**", 1)
+def _ensure_analysis_structure(text, concept_name, facts=None):
+    result = _sanitize_text(text)
+
+    if concept_name and concept_name not in result:
+        result = f"{concept_name}的核心结论是，{result}"
 
     if facts:
-        for fact in facts[:2]:
-            fact_key = fact[:12]
-            if fact_key and fact_key in result and f"**{fact_key}**" not in result:
-                result = result.replace(fact_key, f"**{fact_key}**", 1)
+        fact = facts[0]
+        if fact and fact not in result:
+            result = result.rstrip("。") + f" 据摘要，文中还给出了{fact}这一关键信号。"
 
-    for marker in ["核心改动", "落地价值", "上线建议"]:
-        if marker in result and f"**{marker}**" not in result:
-            result = result.replace(marker, f"**{marker}**", 1)
+    if not re.search(r"落地|部署|工程|业务|产品", result):
+        result = result.rstrip("。") + " 对工程团队而言，它更适合用于降低试错成本、压缩验证周期，帮助判断是否值得进入原型验证。"
 
-    if _count_bold_segments(result) < 3:
-        for marker in ["方法", "价值", "风险"]:
-            if marker in result and f"**{marker}**" not in result:
-                result = result.replace(marker, f"**{marker}**", 1)
-                if _count_bold_segments(result) >= 3:
-                    break
+    if not re.search(r"风险|建议|边界|前提|适用", result):
+        result = result.rstrip("。") + " 上线前仍需结合你的业务数据验证适用边界，重点检查数据分布、算力开销与泛化稳定性。"
 
-    if _count_bold_segments(result) < 3:
-        for marker in ["痛点", "效率", "成本", "效果", "泛化"]:
-            if marker in result and f"**{marker}**" not in result:
-                result = result.replace(marker, f"**{marker}**", 1)
-                if _count_bold_segments(result) >= 3:
-                    break
-
-    if _count_bold_segments(result) < 3:
-        result = f"**核心结论**：{result}"
-
-    if _count_bold_segments(result) < 3:
-        fallback_marks = ["**方法可行性**", "**业务价值**", "**上线风险**"]
-        missing = 3 - _count_bold_segments(result)
-        result = result.rstrip("。") + "，" + "，".join(fallback_marks[:missing]) + "。"
-    return result
+    return _ensure_single_paragraph(result)
 
 
 def _fallback_paragraph(article, concept):
     summary = article.get("raw_text", "")
+    facts = _extract_key_facts(article)
+    fact_clause = f"据摘要，文中给出的关键信号包括{facts[0]}，" if facts else "据摘要，当前公开信息更适合从方法机制与适用边界来理解，"
     return (
-        f"这篇论文围绕**{concept}**提出方法改进，主要通过模型结构、训练策略或数据流程优化来改善效果与效率；"
-        f"据摘要可见其关注点在工程可用性与泛化表现的平衡，核心线索包括“{summary[:120]}...”，"
-        "对团队的**落地价值**在于降低试错成本并提升迭代速度，但在正式上线前仍建议基于你的业务数据进行小流量灰度验证。"
+        f"这篇论文围绕{concept}提出方法改进，关键做法是通过模型结构、训练策略或数据流程优化来改善效果与效率；"
+        f"{fact_clause}核心线索包括“{summary[:120]}...”，重点仍在工程可用性与泛化表现之间的平衡；"
+        "它对团队的直接价值是帮助更快验证方案是否具备上线潜力，但正式投入业务前仍需基于真实数据做小流量验证，重点检查收益是否能覆盖额外复杂度。"
     )
 
 
 def _enforce_quality(parsed, article):
+    """Fill missing fields and enforce minimum readability constraints."""
     title = article.get("title", "")
     concept_name = _sanitize_text(parsed.get("concept_name") or "") or (title.split(":")[0][:80] if ":" in title else title[:80] or "Unknown Concept")
     tag = _sanitize_text(parsed.get("tag") or "") or "论文速览"
@@ -160,8 +143,7 @@ def _enforce_quality(parsed, article):
     facts = _extract_key_facts(article)
 
     deep_analysis = _refine_keypoint_expression(deep_analysis)
-    deep_analysis = _ensure_single_paragraph(deep_analysis)
-    deep_analysis = _ensure_emphasis(deep_analysis, concept_name, facts)
+    deep_analysis = _ensure_analysis_structure(deep_analysis, concept_name, facts)
 
     return {
         "concept_name": concept_name,
@@ -178,6 +160,7 @@ def _enforce_quality(parsed, article):
 
 
 def build_fallback_insight(article):
+    """Build deterministic fallback when API key is missing or calls fail."""
     title = article.get("title", "Unknown Paper")
     concept = title.split(":")[0][:80] if ":" in title else title[:80]
     payload = {
@@ -190,6 +173,7 @@ def build_fallback_insight(article):
 
 
 def analyze_with_deepseek(article, max_retry=3):
+    """Call DeepSeek Chat Completions and return normalized radar record."""
     if not DEEPSEEK_API_KEY:
         print("  Warning: 未配置 DEEPSEEK_API_KEY，启用降级摘要生成。")
         return build_fallback_insight(article)
@@ -200,7 +184,7 @@ def analyze_with_deepseek(article, max_retry=3):
     facts = _extract_key_facts(article)
     if facts:
         hints.append(
-            "摘要中出现的关键数据点（请在 deep_analysis 中自然引用并加粗）：" + "、".join(facts)
+            "摘要中出现的关键数据点（请在 deep_analysis 中自然引用，不要使用 Markdown 标记）：" + "、".join(facts)
         )
     hint_text = "\n".join(hints) if hints else "（无特殊补充）"
 
@@ -209,10 +193,12 @@ def analyze_with_deepseek(article, max_retry=3):
 输出要求（必须遵守）：
 1. 仅输出 JSON，字段仅包含 concept_name、tag、one_sentence_desc、deep_analysis。
 2. tag 必须从以下分类中选最匹配的一个：{_TAG_TAXONOMY}
-3. deep_analysis 必须是单段落，不允许分点、不允许换行、不允许列表符号。
-4. deep_analysis 字数建议 220~320 字，内容按顺序展开：①核心结论（方法做了什么、效果如何），②落地价值（对工程/产品团队的直接收益），③上线建议/风险提示（需注意什么），整体写成连贯自然段。
-5. 粗体（**词语**）标记至少 3 处；优先对摘要中出现的具体数字、技术名称、评测指标加粗，而非泛化词汇。
-6. 语言直接可执行，少形容词，每句有明确信息点；不写"革命性"等夸张词；不确定信息标注"据摘要"。
+3. concept_name 优先提炼成可读的技术名词，不要只截标题前几个单词；如果英文术语更通用，可保留英文并补一个中文解释。
+4. one_sentence_desc 控制在 45~80 字，必须同时交代“做了什么”和“对谁有价值”，不要复读标题。
+5. deep_analysis 必须是单段落，不允许分点、不允许换行、不允许列表符号、不允许 Markdown 粗体或其他格式标记。
+6. deep_analysis 字数建议 220~320 字，按顺序自然展开三层信息：先讲核心改动与证据，再讲对工程/产品团队的直接价值，最后讲适用前提、风险或上线建议。
+7. 若摘要里有数字、指标、数据集、速度/成本变化，请至少引用 1 个具体事实；若没有明确量化结果，就明确说明“据摘要”只能确认方法机制与适用场景。
+8. 语言要像给从业者写晨报：信息密度高、判断克制、少空话，避免“革命性”“颠覆性”这类夸张表述，也不要照抄摘要原句。
 
 {_FEW_SHOT_EXAMPLE}
 现在请处理：
@@ -241,6 +227,7 @@ def analyze_with_deepseek(article, max_retry=3):
         "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
     }
 
+    # Retry with exponential backoff to tolerate transient network/API failures.
     for attempt in range(max_retry):
         req = urllib.request.Request(
             "https://api.deepseek.com/chat/completions",

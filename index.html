@@ -47,6 +47,7 @@
   <script src="latest-radar.js" onerror="console.info('今日雷达尚在构建中。')"></script>
   <script>
     (() => {
+      // Render today's generated radar cards from latest-radar.js payload.
       const radarWrap = document.getElementById('ai-radar-container');
       const radarCardsContainer = document.getElementById('radar-cards');
       const radarGeneratedTime = document.getElementById('radar-generated-time');
@@ -61,7 +62,7 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
-      const formatRichText = (text) => escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      const formatRichText = (text) => escapeHtml(text);
 
       function buildSignalBadges(signals) {
         if (!Array.isArray(signals) || !signals.length) return '';
@@ -92,7 +93,7 @@
             </h3>
             <div class="radar-tag">🏷️ ${escapeHtml(item.tag)}</div>
             <p class="radar-summary">${formatRichText(item.one_sentence_desc)}</p>
-            <p class="radar-analysis"><strong>深度解析：</strong>${formatRichText(item.deep_analysis)}</p>
+            <p class="radar-analysis">深度解析：${formatRichText(item.deep_analysis)}</p>
             <span class="radar-disclaimer">解读基于论文摘要，以原论文为准</span>
           </article>
         `;
@@ -113,6 +114,7 @@
 
   <script>
     (() => {
+      // Lazy-load history by month shards, then progressively append by day on scroll.
       const historyWrap = document.getElementById('history-radar-container');
       const historyCards = document.getElementById('history-cards');
       const historyLoading = document.getElementById('history-loading');
@@ -127,7 +129,7 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 
-      const formatRichText = (text) => escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      const formatRichText = (text) => escapeHtml(text);
 
       function buildSignalBadges(signals) {
         if (!Array.isArray(signals) || !signals.length) return '';
@@ -158,7 +160,7 @@
               </h3>
               <div class="radar-tag">🏷️ ${escapeHtml(item.tag)}</div>
               <p class="radar-summary">${formatRichText(item.one_sentence_desc)}</p>
-              <p class="radar-analysis"><strong>深度解析：</strong>${formatRichText(item.deep_analysis)}</p>
+              <p class="radar-analysis">深度解析：${formatRichText(item.deep_analysis)}</p>
               <span class="radar-disclaimer">解读基于论文摘要，以原论文为准</span>
             </article>
           `;
@@ -220,6 +222,7 @@
 
         appendDays(INITIAL_DAYS);
         fillViewportIfNeeded();
+        // Infinite scroll appends small day batches to keep first paint responsive.
         window.addEventListener('scroll', () => {
           if (isLoading || loadedDays >= dates.length) return;
           if (window.innerHeight + window.scrollY < document.documentElement.scrollHeight - 180) return;
@@ -240,6 +243,7 @@
           if (!months.length) throw new Error('empty index');
           const allDailyMap = {};
           let loadedMonths = 0;
+          // Load month files one-by-one to keep logic simple and fault-tolerant.
           function loadNextMonth() {
             if (loadedMonths >= months.length) {
               setupHistoryFromDailyMap(allDailyMap);
