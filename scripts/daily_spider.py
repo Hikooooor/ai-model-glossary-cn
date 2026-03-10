@@ -1,3 +1,8 @@
+"""Daily pipeline entrypoint.
+
+Flow: load history -> fetch sources -> score/select -> DeepSeek analyze -> write outputs.
+"""
+
 import argparse
 import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -11,6 +16,7 @@ from spider_score import select_top_articles
 
 
 def run_pipeline(dry_run=False):
+    """Run end-to-end generation and return normalized radar records."""
     print(" 开始执行 AI 前沿雷达任务（模块化管线）...")
     if dry_run:
         print("  --dry-run 模式：结果只打印，不写文件")
@@ -19,6 +25,7 @@ def run_pipeline(dry_run=False):
     seen_urls = get_recent_urls(history, days=DEDUP_DAYS)
     print(f"近{DEDUP_DAYS}天已收录 URL：{len(seen_urls)} 篇（用于去重）")
 
+    # External ranking signal from HuggingFace Daily Papers.
     hf_upvotes_map = fetch_hf_daily_papers(days_back=HF_DAYS_BACK)
     arxiv_articles = fetch_recent_ai_papers(max_results=MAX_RESULTS, days=RECENT_DAYS)
 
@@ -36,6 +43,7 @@ def run_pipeline(dry_run=False):
         print(f"  [{i}] 分={art['score']} tier={art['tier']} 信号={art['signals']}")
         print(f"       {art['title'][:60]}...")
 
+    # Keep order stable by writing completed futures back to pre-allocated slots.
     print(f"\n 并发提炼中（最多 {MAX_WORKERS} 并发）...")
     radar_data = [None] * len(selected)
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
@@ -51,6 +59,7 @@ def run_pipeline(dry_run=False):
 
 
 def write_outputs(radar_data):
+    """Write latest js payload and append current day into history files."""
     output_file = "latest-radar.js"
     now_utc = datetime.now(timezone.utc)
     now_bj = now_utc.astimezone(timezone(timedelta(hours=8)))
@@ -59,7 +68,7 @@ def write_outputs(radar_data):
         "generated_at_beijing": now_bj.strftime("%Y-%m-%d %H:%M:%S"),
     }
     js_content = (
-        "// 本文件由 GitHub Actions 每日触发，通过 Arxiv + HuggingFace + DeepSeek 自动生成\n"
+        "// 本文件由抓取管线生成，可通过 GitHub Actions 手动触发更新\n"
         f"// 生成时间(UTC): {meta['generated_at_utc']}\n"
         f"window.dailyRadarMeta = {json.dumps(meta, ensure_ascii=False)};\n"
         f"window.dailyRadarData = {json.dumps(radar_data, ensure_ascii=False, indent=2)};\n"
@@ -80,6 +89,7 @@ def write_outputs(radar_data):
 
 
 def main():
+    """CLI wrapper for normal and dry-run execution."""
     parser = argparse.ArgumentParser(description="AI 前沿雷达生成脚本")
     parser.add_argument("--dry-run", action="store_true", help="只打印结果，不写入任何文件（调试用）")
     args = parser.parse_args()

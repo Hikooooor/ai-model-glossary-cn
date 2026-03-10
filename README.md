@@ -1,6 +1,8 @@
-# AI 每日前沿技术雷达
+# AI 前沿技术雷达
 
-一个静态站点 + 自动化数据管线项目。每天定时抓取 Arxiv 论文，结合 HuggingFace 热度信号进行打分筛选，再调用 DeepSeek 生成结构化解读，最终自动更新前端展示与历史归档。
+一个静态站点 + 自动化数据管线项目。系统会抓取 Arxiv 论文，结合 HuggingFace 热度信号进行打分筛选，再调用 DeepSeek 生成结构化解读，最终更新前端展示与历史归档。
+
+> 当前 GitHub Pages 站点已暂时关闭每日自动抓取，仅保留历史数据展示与手动触发更新能力。
 
 ## 在线地址
 
@@ -8,11 +10,11 @@
 
 ## 你将得到什么
 
-- 每日固定 6 条 AI 前沿卡片（精选 + 值得关注）
+- 单次生成固定 6 条 AI 前沿卡片（精选 + 值得关注）
 - 自动落地当前日数据到 `latest-radar.js`
 - 自动维护历史数据（总表 + 月分片 + 索引）
 - 前端支持“今日卡片 + 历史懒加载”浏览
-- GitHub Actions 全自动执行与自动提交
+- GitHub Actions 支持手动执行与自动提交
 
 ## 项目全景
 
@@ -20,7 +22,7 @@
 
 - `index.html`：首页结构与两段核心脚本（今日卡片渲染、历史懒加载）
 - `styles.css`：页面样式
-- `latest-radar.js`：每日产物，挂载 `window.dailyRadarMeta` 与 `window.dailyRadarData`
+- `latest-radar.js`：最新产物，挂载 `window.dailyRadarMeta` 与 `window.dailyRadarData`
 - `data/radar-history.json`：全量历史总表（按日期聚合）
 - `data/YYYY-MM.json`：月分片历史，供前端按月加载
 - `data/history-index.json`：月分片目录索引
@@ -31,11 +33,11 @@
 - `scripts/spider_deepseek.py`：DeepSeek 调用与质量兜底
 - `scripts/spider_history.py`：历史归档、去重、裁剪、月分片索引
 - `scripts/spider_config.py`：集中配置参数
-- `.github/workflows/daily-update.yml`：定时任务 + 自动提交
+- `.github/workflows/daily-update.yml`：手动任务 + 自动提交
 
 ### 端到端数据流
 
-1. GitHub Actions 在 UTC `00:00` 和 `00:15` 触发。
+1. GitHub Actions 在手动触发时执行。
 2. 执行 `python scripts/daily_spider.py`。
 3. 读取历史，提取近 `DEDUP_DAYS` 的 URL 作为去重集合。
 4. 抓取 HuggingFace Daily Papers 作为热度加权信号。
@@ -49,6 +51,8 @@
 12. 更新 `data/history-index.json`。
 13. 工作流写入 `data/last-run.json`。
 14. 若存在变更，自动 `git commit` + `git push`。
+
+> 说明：当前仓库已关闭 schedule 与 push 自动触发，因此线上页面会停留在最近一次生成的数据，直到你手动运行工作流或本地执行脚本并提交产物。
 
 ## 核心工作流程（详细）
 
@@ -121,7 +125,7 @@
 1. 加载 `latest-radar.js`。
 2. 读取 `window.dailyRadarData` 和 `window.dailyRadarMeta`。
 3. 渲染卡片网格，展示供应方、日期、标签、摘要、深度解析、信号徽章。
-4. 顶部显示生成时间（北京时间/UTC）。
+4. 顶部显示最近一次生成时间（北京时间/UTC）。
 
 ### 历史卡片（`index.html`）
 
@@ -213,7 +217,7 @@ window.dailyRadarData = [
 
 ### 核心参数（`scripts/spider_config.py`）
 
-- `MAX_RESULTS = 6`：每天输出条数
+- `MAX_RESULTS = 6`：每次输出条数
 - `RECENT_DAYS = 10`：优先最近天数
 - `HF_DAYS_BACK = 3`：HF 信号回看天数
 - `MAX_WORKERS = 6`：DeepSeek 并发数
@@ -225,12 +229,14 @@ window.dailyRadarData = [
 文件：`.github/workflows/daily-update.yml`
 
 - 触发器：
-- `schedule`: UTC `00:00` + `00:15`
 - `workflow_dispatch`: 手动触发
-- `push`: 修改 `scripts/daily_spider.py` 时触发一次
 - 执行环境：`ubuntu-latest`, Python `3.11`
 - 权限：`contents: write`（用于自动提交）
 - 产物提交策略：仅有文件差异时才提交，避免空提交
+
+当前状态：
+- 已暂时关闭 `schedule` 与 `push` 自动触发，避免 GitHub Pages 每日自动抓取 Arxiv。
+- 如需临时更新页面内容，可在 GitHub Actions 页面手动运行 `Daily DeepSeek AI Radar`。
 
 ## 本地开发与调试
 
@@ -259,11 +265,11 @@ python scripts/daily_spider.py --dry-run
 
 ## 常见问题与排查
 
-### 定时任务未触发
+### 手动任务未触发
 
-- 确认默认分支是 `main`
 - 确认仓库 Actions 未被暂停
 - 看 `.github/workflows/daily-update.yml` 是否在默认分支
+- 检查是否是从 GitHub Actions 页面手动触发了工作流
 
 ### 有运行但页面未更新
 

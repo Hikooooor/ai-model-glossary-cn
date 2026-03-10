@@ -86,6 +86,43 @@ h1 {
   font-size: 16px;
 }
 
+.status-notice {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid #fcd34d;
+  border-radius: 12px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 14px;
+}
+
+.status-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
+}
+
+.status-details div {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--border);
+}
+
+.status-details dt {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.status-details dd {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .hero-actions {
   margin-top: 18px;
   display: flex;
@@ -144,6 +181,12 @@ h1 {
 .radar-meta {
   margin: -6px 0 14px;
   color: var(--muted);
+  font-size: 13px;
+}
+
+.section-note {
+  margin: -4px 0 12px;
+  color: #92400e;
   font-size: 13px;
 }
 

@@ -1,13 +1,17 @@
+"""Heuristic scoring and tier assignment for candidate papers."""
+
 from spider_config import PRACTITIONER_KEYWORDS, TOP_CONF_KEYWORDS, TOP_ORGS
 
 
 def score_article(article, hf_upvotes_map, seen_urls):
+    """Score a paper using multi-signal heuristics and return (score, signals)."""
     url = article.get("url", "")
     title = article.get("title", "")
     abstract = article.get("raw_text", "")
     text = (title + " " + abstract).lower()
     authors_line = article.get("vendor", "").lower()
 
+    # Hard dedup: skip URLs that appeared recently.
     if url in seen_urls:
         return -1, []
 
@@ -55,6 +59,7 @@ def score_article(article, hf_upvotes_map, seen_urls):
 
 
 def select_top_articles(articles, hf_upvotes_map, seen_urls, max_results):
+    """Rank candidates, drop deduped items, and label featured/notable tiers."""
     scored = []
     deduped_count = 0
     for article in articles:

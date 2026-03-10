@@ -17,8 +17,21 @@
     </header>
 
     <section class="hero">
-      <h1>每天 3 分钟，追踪 AI 前沿</h1>
-      <p class="subtitle">从 Arxiv 源头论文出发，筛选并提炼对工程与产品最有价值的技术进展。</p>
+      <h1>AI 前沿追踪</h1>
+      <p class="subtitle">当前站点保留最近一次生成结果与历史归档，Arxiv 自动抓取已暂时关闭，恢复前不会每日更新。</p>
+      <div class="status-notice">
+        <strong>状态：</strong>自动抓取暂停中，仅保留历史内容浏览与手动更新。
+      </div>
+      <dl class="status-details" aria-label="站点更新状态说明">
+        <div>
+          <dt>暂停时间</dt>
+          <dd>2026-03-10</dd>
+        </div>
+        <div>
+          <dt>更新方式</dt>
+          <dd>仅支持手动运行 GitHub Actions 工作流</dd>
+        </div>
+      </dl>
       <div class="hero-actions">
         <a class="btn btn-primary" href="#ai-radar-container">查看今日精选</a>
         <a class="btn btn-ghost" href="#history-radar-container">浏览历史存档</a>
@@ -26,7 +39,8 @@
     </section>
 
     <section id="ai-radar-container" class="radar hidden">
-      <h2 class="radar-title">DeepSeek 每日雷达 · 前沿技术追踪</h2>
+      <h2 class="radar-title">DeepSeek 雷达 · 最近一次生成结果</h2>
+      <p class="section-note">当前页面展示的是停用自动抓取前的最后一次生成结果；如需刷新内容，请手动运行工作流。</p>
       <p id="radar-generated-time" class="radar-meta hidden"></p>
       <div id="radar-cards" class="radar-grid"></div>
     </section>
@@ -38,10 +52,10 @@
       </div>
       <div id="history-cards"></div>
       <p id="history-loading" class="history-loading hidden">继续下滑，正在加载更多历史内容...</p>
-      <p id="history-empty" class="history-empty hidden">暂无历史数据，请等待每日任务写入。</p>
+      <p id="history-empty" class="history-empty hidden">暂无历史数据，可在恢复任务后重新生成。</p>
     </section>
 
-    <footer>持续更新 · 建议收藏本页追踪每日 AI 前沿</footer>
+    <footer>当前展示最近一次生成结果与历史归档 · 恢复自动抓取前可手动触发更新</footer>
   </div>
 
   <script src="latest-radar.js" onerror="console.info('今日雷达尚在构建中。')"></script>
@@ -104,7 +118,7 @@
         const bj = radarMeta.generated_at_beijing || '';
         const utc = radarMeta.generated_at_utc || '';
         if (bj || utc) {
-          radarGeneratedTime.textContent = `抓取时间：北京时间 ${bj || '-'}（UTC ${utc || '-'}）`;
+          radarGeneratedTime.textContent = `最近一次生成时间：北京时间 ${bj || '-'}（UTC ${utc || '-'}）`;
           radarGeneratedTime.classList.remove('hidden');
         }
       }

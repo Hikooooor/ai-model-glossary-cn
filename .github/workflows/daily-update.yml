@@ -2,19 +2,7 @@ name: Daily DeepSeek AI Radar
 
 # 设置触发条件
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'scripts/daily_spider.py' # 当你修改这个脚本时，立刻帮你测试一次
-  schedule:
-    # 每天 UTC 时间 0点（北京时间早上 8点）执行自动化任务
-    # 这个定时抓取是你实现 "每日 AI 技术扫描" 的核心触发点
-    - cron: '0 0 * * *'
-    # 兜底补偿触发：GitHub schedule 可能存在分钟级延迟，15 分钟后再触发一次
-    - cron: '15 0 * * *'
-
-  # 使其可以手动触发，这对你开发和修改很有用
+  # 暂时关闭自动抓取，仅保留手动触发
   workflow_dispatch:
 
 # 给 Action 推送代码的回写权限（重点：它每天会把爬到的新数据存成JS文件并自己提交进仓库！）

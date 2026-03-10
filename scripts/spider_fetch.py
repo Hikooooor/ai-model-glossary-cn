@@ -1,3 +1,5 @@
+"""Source fetchers for HuggingFace Daily Papers and Arxiv Atom feed."""
+
 import json
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -7,6 +9,7 @@ from spider_config import HF_DAYS_BACK, MAX_RESULTS, RECENT_DAYS
 
 
 def fetch_hf_daily_papers(days_back=HF_DAYS_BACK):
+    """Return {arxiv_id: upvotes} for a target HF Daily Papers date."""
     hf_map = {}
     target_date = datetime.now(timezone.utc).date() - timedelta(days=days_back)
     date_str = target_date.strftime("%Y-%m-%d")
@@ -31,6 +34,7 @@ def fetch_hf_daily_papers(days_back=HF_DAYS_BACK):
 
 
 def fetch_recent_ai_papers(max_results=MAX_RESULTS, days=RECENT_DAYS):
+    """Fetch recent Arxiv entries and keep a recency flag for later scoring/selecting."""
     print(f"正在从 Arxiv 抓取最新论文（6个核心类目，过去 {days} 天优先）...")
     fetch_size = max(40, max_results * 8)
     categories = "cat:cs.AI+OR+cat:cs.CL+OR+cat:cs.LG+OR+cat:cs.CV+OR+cat:cs.MA+OR+cat:cs.IR"
@@ -68,6 +72,7 @@ def fetch_recent_ai_papers(max_results=MAX_RESULTS, days=RECENT_DAYS):
                 }
             )
 
+        # Prefer recent papers; fall back to full pool if recent count is insufficient.
         recent = [a for a in articles if a["is_recent"]]
         pool = recent if len(recent) >= max_results else articles
         print(f"  Arxiv: 获取到 {len(articles)} 篇，其中近{days}天 {len(recent)} 篇，候选池 {len(pool)} 篇")

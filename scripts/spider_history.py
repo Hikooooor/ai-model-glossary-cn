@@ -1,3 +1,5 @@
+"""History persistence helpers for daily, monthly, and index files."""
+
 import json
 import os
 from datetime import datetime, timedelta, timezone
@@ -6,6 +8,7 @@ from spider_config import DEDUP_DAYS, HISTORY_FILE, HISTORY_INDEX_FILE, HISTORY_
 
 
 def normalize_record(item):
+    """Return a schema-stable record with defaults for any missing fields."""
     return {
         "vendor": item.get("vendor", "Unknown"),
         "date": item.get("date", datetime.now(timezone.utc).strftime("%Y-%m-%d")),
@@ -21,6 +24,7 @@ def normalize_record(item):
 
 
 def load_history():
+    """Load history file with backward-compatible schema upgrades."""
     if not os.path.exists(HISTORY_FILE):
         return {"schema_version": 2, "timezone": "UTC", "daily": {}}
     try:
@@ -38,6 +42,7 @@ def load_history():
 
 
 def get_recent_urls(history, days=DEDUP_DAYS):
+    """Collect URLs from recent days used for cross-day deduplication."""
     daily = history.get("daily", {})
     cutoff = datetime.now(timezone.utc).date() - timedelta(days=days)
     seen_urls = set()
@@ -54,6 +59,7 @@ def get_recent_urls(history, days=DEDUP_DAYS):
 
 
 def prune_history(history, keep_days=HISTORY_KEEP_DAYS):
+    """Keep only records newer than keep_days to cap repository growth."""
     daily = history.get("daily", {})
     cutoff = datetime.now(timezone.utc).date() - timedelta(days=keep_days)
     valid_daily = {
@@ -66,6 +72,7 @@ def prune_history(history, keep_days=HISTORY_KEEP_DAYS):
 
 
 def save_monthly_file(today, today_records):
+    """Write/merge month shard (data/YYYY-MM.json) for lazy history loading."""
     month_key = today[:7]
     month_file = f"data/{month_key}.json"
 
@@ -91,6 +98,7 @@ def save_monthly_file(today, today_records):
 
 
 def update_history_index(month_key):
+    """Update month index used by frontend to discover available shards."""
     index_data = {"months": []}
     if os.path.exists(HISTORY_INDEX_FILE):
         try:
@@ -109,6 +117,7 @@ def update_history_index(month_key):
 
 
 def save_today_history(radar_data):
+    """Merge today's results into full history and monthly shard/index files."""
     os.makedirs("data", exist_ok=True)
     history = load_history()
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
